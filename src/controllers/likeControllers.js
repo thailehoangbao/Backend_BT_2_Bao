@@ -8,26 +8,60 @@ const postAddLikeToRes = async (req, res) => {
     let {resid,userid} = req.params;
     const date = new Date();
 
-    let data = await models.like_res.create({
-        user_id: userid,
-        res_id: resid,
-        date_like: date
-    })
-
-    res.status(200).send(data);
-}
-
-//Xóa like nhà hàng
-const deleteDeleteLikeToRes = async (req, res) => {
-    let {resid,userid} = req.params;
-
-    await models.like_res.destroy({
+    let checkLike = await models.like_res.findOne({
         where: {
             user_id: userid,
             res_id: resid
         }
     })
-    res.status(200).send('Delete Like Success!');
+
+    if (!checkLike) {
+        await models.like_res.create({
+            user_id: userid,
+            res_id: resid,
+            date_like: date
+        })
+        res.send(true);
+    } else {
+        await models.like_res.destroy({
+            where: {
+                user_id: userid,
+                res_id: resid,
+            }
+        })
+        res.send(false);
+    }
+
+}
+
+//Xóa like nhà hàng
+const disLikeToRes = async (req, res) => {
+    let {resid,userid} = req.params;
+    const date = new Date();
+
+    let checkLike = await models.like_res.findOne({
+        where: {
+            user_id: userid,
+            res_id: resid
+        }
+    })
+    if (checkLike) {
+        await models.like_res.destroy({
+            where: {
+                user_id: userid,
+                res_id: resid
+            }
+        })
+        res.send(false);
+    } else {
+        await models.like_res.create({
+            user_id: userid,
+            res_id: resid,
+            date_like: date
+        })
+        res.send(true);
+    }
+
 }
 
 const getListLikesFollowRestaurants = async (req, res) => {
@@ -53,4 +87,4 @@ const getListLikesFollowUsers = async (req, res) => {
     res.send(listLikes);
 }
 
-export { getListLikesFollowRestaurants,getListLikesFollowUsers,postAddLikeToRes ,deleteDeleteLikeToRes};
+export { getListLikesFollowRestaurants,getListLikesFollowUsers,postAddLikeToRes ,disLikeToRes};
